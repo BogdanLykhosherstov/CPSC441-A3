@@ -12,17 +12,17 @@
 
 using namespace std;
 
-typedef int typedef int vertex_t;
-typedef double weight_t;;
+// typedef int typedef int int;
+// typedef double double;;
 
 
 
-const weight_t max_weight = numeric_limits<int>::infinity();
+const double max_weight = numeric_limits<double>::infinity();
 
 struct neighbor {
-    vertex_t target;
-    weight_t weight;
-    neighbor(vertex_t arg_target, weight_t arg_weight)
+    int target;
+    double weight;
+    neighbor(int arg_target, double arg_weight)
         : target(arg_target), weight(arg_weight) { }
 };
 //myStructureForHobbitPaths
@@ -31,10 +31,10 @@ struct neighbor {
 typedef vector<vector<neighbor> > adjacency_list_t;
 
 
-void DijkstraComputePaths(vertex_t source,
+void DijkstraComputePaths(int source,
                           const adjacency_list_t &adjacency_list,
-                          vector<weight_t> &min_distance,
-                          vector<vertex_t> &previous)
+                          vector<double> &min_distance,
+                          vector<int> &previous)
 {
     int n = adjacency_list.size();
     min_distance.clear();
@@ -42,13 +42,13 @@ void DijkstraComputePaths(vertex_t source,
     min_distance[source] = 0;
     previous.clear();
     previous.resize(n, -1);
-    set<pair<weight_t, vertex_t> > vertex_queue;
+    set<pair<double, int> > vertex_queue;
     vertex_queue.insert(make_pair(min_distance[source], source));
 
     while (!vertex_queue.empty())
     {
-        weight_t dist = vertex_queue.begin()->first;
-        vertex_t u = vertex_queue.begin()->second;
+        double dist = vertex_queue.begin()->first;
+        int u = vertex_queue.begin()->second;
         vertex_queue.erase(vertex_queue.begin());
 
         // Visit each edge exiting u
@@ -57,9 +57,9 @@ void DijkstraComputePaths(vertex_t source,
              neighbor_iter != neighbors.end();
              neighbor_iter++)
         {
-            vertex_t v = neighbor_iter->target;
-            weight_t weight = neighbor_iter->weight;
-            weight_t distance_through_u = dist + weight;
+            int v = neighbor_iter->target;
+            double weight = neighbor_iter->weight;
+            double distance_through_u = dist + weight;
 	    if (distance_through_u < min_distance[v]) {
 	        vertex_queue.erase(make_pair(min_distance[v], v));
 
@@ -75,9 +75,9 @@ void DijkstraComputePaths(vertex_t source,
 
 
 list<int> DijkstraGetShortestPathTo(
-    vertex_t vertex, const vector<vertex_t> &previous)
+    int vertex, const vector<int> &previous)
 {
-    list<vertex_t> path;
+    list<int> path;
     for ( ; vertex != -1; vertex = previous[vertex])
         path.push_front(vertex);
     return path;
@@ -249,7 +249,7 @@ int main()
           //third is cost
           else if(r == 2){
             cost = SHP_Array[i][r];
-            adjacency_list[insertlocation].push_back(neighbor(neighb, (double)cost));
+            adjacency_list[insertlocation].push_back(neighbor(neighb, cost));
 
             printf("Node: %d, Pushed: neighbor(%d, %d)\n",insertlocation, neighb, cost);
           }
@@ -289,13 +289,13 @@ int main()
     // adjacency_list[5].push_back(neighbor(2, 2));
     // adjacency_list[5].push_back(neighbor(4, 9));
     //
-    vector<weight_t> min_distance;
-    vector<vertex_t> previous;
-    DijkstraComputePaths(0, adjacency_list, min_distance, previous);
-    cout << "Distance from 0 to 4: " << min_distance[4] << endl;
-    list<vertex_t> path = DijkstraGetShortestPathTo(4, previous);
+    vector<double> min_distance;
+    vector<int> previous;
+    DijkstraComputePaths(2, adjacency_list, min_distance, previous);
+    cout << "Distance from C(0) to M(2): " << min_distance[0] << endl;
+    list<int> path = DijkstraGetShortestPathTo(0, previous);
     cout << "Path : ";
-    copy(path.begin(), path.end(), ostream_iterator<vertex_t>(cout, " "));
+    copy(path.begin(), path.end(), ostream_iterator<int>(cout, " "));
     cout << endl;
 
     //UNCOMMENT END
