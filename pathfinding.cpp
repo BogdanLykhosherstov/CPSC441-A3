@@ -10,6 +10,7 @@ using namespace std;
 
 // Number of vertices in the graph
 #define V 26
+int home;
 int SHP[26][26];
 int SDP[26][26];
 int STP[26][26];
@@ -62,7 +63,7 @@ int calculate(int array[26][26], string path){
 
 void printLayout(int dist[], int n, int parent[])
 {
-  int src = 2;
+  int src = home;
   string path = "";
   double avgHops=0;
   double avgDist=0;
@@ -78,20 +79,22 @@ void printLayout(int dist[], int n, int parent[])
   {
       if( (dist[i]!=2147483647) && dist[i]>0){
           string returnPath = printPath(parent, i, path, (char)(src+65));
-          cout<<addressbook[i];
+          cout<<" "<<addressbook[i];
           int hops = (returnPath.length())-1;
-          printf(" \t   %c  \t  %d\t %d\t %d  \t   %d  \t   %d\t ", ((char)(i+65)), hops, calculate(SDP, returnPath), calculate(STP, returnPath), calculate(GOLD, returnPath), calculate(FTP, returnPath));
+          printf("\t   %c  \t  %d\t %d\t %d  \t   %d  \t   %d\t ", ((char)(i+65)), hops, calculate(SDP, returnPath), calculate(STP, returnPath), calculate(GOLD, returnPath), calculate(FTP, returnPath));
           cout<<returnPath<<endl;
           count++;
+          //adding up the totals
 
           avgHops+=hops;
           avgDist+=calculate(SDP, returnPath);
           avgTime+=calculate(STP,returnPath);
           avgGold+=calculate(GOLD, returnPath);
           avgTrolls+=calculate(FTP, returnPath);
+          //making path zero at the end
+
           path = "";
 
-          //adding up the totals
 
 
 
@@ -103,8 +106,8 @@ void printLayout(int dist[], int n, int parent[])
   avgGold = avgGold / count;
   avgHops = avgHops / count;
   avgTrolls = avgTrolls / count;
-  printf("\n -------------------------------------------------------------\n");
-  printf("AVERAGE \t %.2f  %.2f   %.2f    %.2f   %.2f\n", avgHops, avgDist, avgTime, avgGold, avgTrolls);
+  printf(" -------------------------------------------------------------\n");
+  printf(" AVERAGE\t %.2f  %.2f   %.2f    %.2f   %.2f\n", avgHops, avgDist, avgTime, avgGold, avgTrolls);
 }
 // Funtion that implements Dijkstra's single source shortest path
 // algorithm for a graph represented using adjacency matrix
@@ -166,14 +169,22 @@ void dijkstra(int graph[V][V], int src)
 // driver program to test above function
 int main()
 {
+    char map_name[16];
+    char address_name[16];
+    printf("Enter the name of the map: \n");
+    scanf("%s", &map_name);
+    printf("Enter the name of the address book: \n");
+    scanf("%s", &address_name);
+    string bilbo = "Bilbo";
+    char name[100];
+    char name_char;
     int flag;
-    printf("Enter 0 for SHP, 1 for SDP, 2 for STP, and 3 for FTP: ");
-    scanf("%d", &flag);
+
     char source, dest;
     int distance, traveltime, coin, trolls;
     FILE *fp;
     FILE *fc;
-    fp = fopen("canadamap.txt", "r");
+    fp = fopen(map_name, "r");
     //Declare the matrix being 26 at maximum size foreach letter of Alphabet
     SHP[26][26] = { 0 };
     SDP[26][26] = { 0 };
@@ -181,15 +192,20 @@ int main()
     FTP[26][26] = { 0 };
     GOLD[26][26] = { 0 };
 
+    fc = fopen(address_name, "r");
+    while(fscanf(fc, "%s %c\n", name, &name_char)!=EOF){
+      if(bilbo.compare(string(name))==0){
+        home = ((int)name_char)-65;
+      }
+      addressbook[((int)name_char)-65]= string(name);
+    }
+    fclose(fc);
     while(fscanf(fp, "%c %c %d %d %d %d\n", &source, &dest, &distance, &traveltime, &coin, &trolls)!=EOF){
         SHP[((int)source)-65][((int)dest)-65] = 1;
         SHP[((int)dest)-65][((int)source)-65] = 1;
 
-
         SDP[((int)source)-65][((int)dest)-65] = distance;
         SDP[((int)dest)-65][((int)source)-65] = distance;
-
-
 
         STP[((int)source)-65][((int)dest)-65] = traveltime;
         STP[((int)dest)-65][((int)source)-65] = traveltime;
@@ -200,32 +216,31 @@ int main()
         GOLD[((int)source)-65][((int)dest)-65] = coin;
         GOLD[((int)dest)-65][((int)source)-65] = coin;
     }
-    char name[100];
-    char name_char;
+
     fclose(fp);
     //populating address book
-    fc = fopen("canadahomes.txt", "r");
-    while(fscanf(fc, "%s %c\n", name, &name_char)!=EOF){
 
-      addressbook[((int)name_char)-65]= string(name);
-    }
-    fclose(fc);
 
     //takes in C(2) as src
-    if(flag==0){
-      dijkstra(SHP, 2);
+    while(flag!=-1){
+      printf("\n Enter:\n ----------------\n 0 for SHP\n 1 for SDP\n 2 for STP\n 3 for FTP.\n ----------------\n Enter -1 to exit: \n");
+      scanf("%d", &flag);
+      if(flag==0){
+        dijkstra(SHP, home);
+      }
+      else if(flag==1){
+        dijkstra(SDP, home);
+      }
+      else if(flag==2){
+        dijkstra(STP, home);
+      }
+      else if(flag==3){
+        dijkstra(FTP, home);
+      }
+      else if(flag!=-1){
+        printf("\n Incorrect choice, please try again. \n");
+      }
     }
-    else if(flag==1){
-      dijkstra(SDP, 2);
-    }
-    else if(flag==2){
-      dijkstra(STP, 2);
-    }
-    else if(flag==3){
-      dijkstra(FTP, 2);
-    }
-
-
 
     return 0;
 }

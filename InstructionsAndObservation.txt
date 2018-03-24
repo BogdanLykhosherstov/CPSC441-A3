@@ -1,0 +1,13 @@
+
+INSTRUCTIONS:
+
+1) Compile
+2) Enter the name of the map, then the address book with the full file extension(e.g canadahomes.txt)
+3) Then select from 1 of the 4 options of routing algorithms to run
+4) Type -1 to exit the program
+
+OBSERVATION:
+
+The algorithm itself runs in O(n^2) time regardless of the routing, however the parsing tasks increase the complexity further. 
+On relatively small topology files the performance difference will be negligible, such as the test and the full map given in this assignment.
+However it is apparent that with increasing size and length of the topology file, the runtime will exponentially increase.
