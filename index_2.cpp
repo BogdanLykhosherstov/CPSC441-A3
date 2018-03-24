@@ -1,11 +1,21 @@
 // A C / C++ program for Dijkstra's single source shortest
 // path algorithm. The program is for adjacency matrix
 // representation of the graph.
+#include <iostream>
 #include <stdio.h>
-#include <limits.h>
+#include <limits>
+#include <string>
+#include <map>
+using namespace std;
 
 // Number of vertices in the graph
 #define V 26
+int SHP[26][26];
+int SDP[26][26];
+int STP[26][26];
+int FTP[26][26];
+int GOLD[26][26];
+string addressbook[26];
 
 // A utility function to find the vertex with minimum distance
 // value, from the set of vertices not yet included in shortest
@@ -24,35 +34,78 @@ int minDistance(int dist[], bool sptSet[])
 
 // Function to print shortest path from source to j
 // using parent array
-void printPath(int parent[], int j)
+string & printPath(int parent[], int j, string & path, char src)
 {
     // Base Case : If j is source
-    if (parent[j]==-1)
-        return;
-
-    printPath(parent, parent[j]);
-
-    printf("%d ", j);
-}
-
-// A utility function to print the constructed distance
-// array
-int printSolution(int dist[], int n, int parent[])
-{
-    int src = 2;
-    printf("Vertex\t  Distance\tPath");
-    for (int i = 1; i < V; i++)
-    {
-        if( (dist[i]!=2147483647) && dist[i]>0){
-            printf("\n%c -> %c \t\t %d\t\t%d ", ((char)(src+65)), ((char)(i+65)), dist[i], src);
-            printPath(parent, i);
-        }
-
+    if (parent[j]==-1){
+        return path+=src;
     }
-    printf(" \n");
-    return 0;
+
+    path = path+(char)(j+65);
+    printPath(parent, parent[j], path, src);
+
+}
+int calculate(int array[26][26], string path){
+
+  int result = 0;
+  //Calculate cumilitive property(Dist, Time, Gold, Trolls)
+  for(int i=1;i<path.length();i++){
+    int newpath = ((int)path[i])-65;
+    int previouspath = ((int)path[i-1])-65;
+    result+=array[newpath][previouspath];
+  }
+
+  return result;
 }
 
+
+
+void printLayout(int dist[], int n, int parent[])
+{
+  int src = 2;
+  string path = "";
+  double avgHops=0;
+  double avgDist=0;
+  double avgTime=0;
+  double avgGold=0;
+  double avgTrolls=0;
+
+  int count=0;
+  // printf("Home\t  Distance\tPath");
+  printf(" Dwarf\t  Home\t Hops\t Dist\t Time \t Gold\tTrolls\t Path");
+  printf("\n -------------------------------------------------------------\n");
+  for (int i = 1; i < V; i++)
+  {
+      if( (dist[i]!=2147483647) && dist[i]>0){
+          string returnPath = printPath(parent, i, path, (char)(src+65));
+          cout<<addressbook[i];
+          int hops = (returnPath.length())-1;
+          printf(" \t   %c  \t  %d\t %d\t %d  \t   %d  \t   %d\t ", ((char)(i+65)), hops, calculate(SDP, returnPath), calculate(STP, returnPath), calculate(GOLD, returnPath), calculate(FTP, returnPath));
+          cout<<returnPath<<endl;
+          count++;
+
+          avgHops+=hops;
+          avgDist+=calculate(SDP, returnPath);
+          avgTime+=calculate(STP,returnPath);
+          avgGold+=calculate(GOLD, returnPath);
+          avgTrolls+=calculate(FTP, returnPath);
+          path = "";
+
+          //adding up the totals
+
+
+
+      }
+
+  }
+  avgDist = avgDist / count;
+  avgTime = avgTime / count;
+  avgGold = avgGold / count;
+  avgHops = avgHops / count;
+  avgTrolls = avgTrolls / count;
+  printf("\n -------------------------------------------------------------\n");
+  printf("AVERAGE \t %.2f  %.2f   %.2f    %.2f   %.2f\n", avgHops, avgDist, avgTime, avgGold, avgTrolls);
+}
 // Funtion that implements Dijkstra's single source shortest path
 // algorithm for a graph represented using adjacency matrix
 // representation
@@ -107,28 +160,36 @@ void dijkstra(int graph[V][V], int src)
     }
 
     // print the constructed distance array
-    printSolution(dist, V, parent);
+    printLayout(dist, V, parent);
 }
 
 // driver program to test above function
 int main()
 {
+    int flag;
+    printf("Enter 0 for SHP, 1 for SDP, 2 for STP, and 3 for FTP: ");
+    scanf("%d", &flag);
     char source, dest;
     int distance, traveltime, coin, trolls;
     FILE *fp;
+    FILE *fc;
     fp = fopen("canadamap.txt", "r");
     //Declare the matrix being 26 at maximum size foreach letter of Alphabet
-    int SHP[26][26]= { 0 };
-    int SDP[26][26] = { 0 };
-    int STP[26][26] = { 0 };
-    int FTP[26][26] = { 0 };
+    SHP[26][26] = { 0 };
+    SDP[26][26] = { 0 };
+    STP[26][26] = { 0 };
+    FTP[26][26] = { 0 };
+    GOLD[26][26] = { 0 };
+
     while(fscanf(fp, "%c %c %d %d %d %d\n", &source, &dest, &distance, &traveltime, &coin, &trolls)!=EOF){
         SHP[((int)source)-65][((int)dest)-65] = 1;
         SHP[((int)dest)-65][((int)source)-65] = 1;
-        //printf("SHP[dest][src]%d\n", SHP[((int)dest)-65][((int)source)-65]);
+
 
         SDP[((int)source)-65][((int)dest)-65] = distance;
         SDP[((int)dest)-65][((int)source)-65] = distance;
+
+
 
         STP[((int)source)-65][((int)dest)-65] = traveltime;
         STP[((int)dest)-65][((int)source)-65] = traveltime;
@@ -136,11 +197,34 @@ int main()
         FTP[((int)source)-65][((int)dest)-65] = trolls;
         FTP[((int)dest)-65][((int)source)-65] = trolls;
 
+        GOLD[((int)source)-65][((int)dest)-65] = coin;
+        GOLD[((int)dest)-65][((int)source)-65] = coin;
     }
+    char name[100];
+    char name_char;
     fclose(fp);
+    //populating address book
+    fc = fopen("canadahomes.txt", "r");
+    while(fscanf(fc, "%s %c\n", name, &name_char)!=EOF){
+
+      addressbook[((int)name_char)-65]= string(name);
+    }
+    fclose(fc);
 
     //takes in C(2) as src
-    dijkstra(SHP, 2);
+    if(flag==0){
+      dijkstra(SHP, 2);
+    }
+    else if(flag==1){
+      dijkstra(SDP, 2);
+    }
+    else if(flag==2){
+      dijkstra(STP, 2);
+    }
+    else if(flag==3){
+      dijkstra(FTP, 2);
+    }
+
 
 
     return 0;
